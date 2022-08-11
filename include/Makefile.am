@@ -11,7 +11,8 @@ PI/pi_counter.h \
 PI/pi_meter.h \
 PI/pi_learn.h \
 PI/pi_mc.h \
-PI/pi_clone.h
+PI/pi_clone.h \
+PI/pi_runtime_reconfig.h
 
 nobase_include_HEADERS += \
 PI/frontends/generic/pi.h
@@ -37,4 +38,5 @@ PI/target/pi_counter_imp.h \
 PI/target/pi_meter_imp.h \
 PI/target/pi_learn_imp.h \
 PI/target/pi_mc_imp.h \
-PI/target/pi_clone_imp.h
+PI/target/pi_clone_imp.h \
+PI/target/pi_runtime_reconfig_imp.h

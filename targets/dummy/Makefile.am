@@ -13,6 +13,7 @@ pi_learn_imp.c \
 pi_mc_imp.c \
 pi_clone_imp.c \
 func_counter.c \
-func_counter.h
+func_counter.h \
+pi_runtime_reconfig_imp.c
 
 lib_LTLIBRARIES = libpi_dummy.la

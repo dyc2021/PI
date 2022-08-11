@@ -52,7 +52,8 @@ device_map.h \
 cb_mgr.c \
 cb_mgr.h \
 pi_tables_int.h \
-pi_learn_int.h
+pi_learn_int.h \
+pi_runtime_reconfig.c
 
 if WITH_INTERNAL_RPC
 libpi_la_SOURCES += \

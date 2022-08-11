@@ -28,6 +28,7 @@
 #include "pi_counter.h"
 #include "pi_meter.h"
 #include "pi_tables.h"
+#include "pi_runtime_reconfig.h"
 
 #ifdef __cplusplus
 extern "C" {
