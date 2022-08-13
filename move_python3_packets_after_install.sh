@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# This is adapted from p4lang/tutorials/vm-ubuntu-20.04/user-dev-bootstrap.sh
+# This is adapted from https://github.com/jafingerhut/p4-guide/blob/dc25ab6d8bbdd5af12d572746c47807cc38274ab/bin/install-p4dev-v6.sh#L300
 
 # Originally this is PY3LOCALPATH=`${HOME}/py3localpath.py`, but py3localpath.py is unfound
 PY3LOCALPATH="/usr/local/lib/python3.6"
