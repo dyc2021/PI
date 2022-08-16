@@ -195,3 +195,14 @@ pi_status_t pi_runtime_reconfig_change_init(pi_session_handle_t session_handle,
                                             pipeline_name,
                                             table_name_next);
 }
+
+pi_status_t pi_runtime_reconfig_read_json(pi_session_handle_t session_hanle,
+                                          pi_dev_tgt_t dev_tgt,
+                                          char* read_json_entry) {
+    const pi_p4info_t* p4info = pi_get_device_p4info(dev_tgt.dev_id);
+    if (!p4info) return PI_STATUS_DEV_NOT_ASSIGNED;
+    return _pi_runtime_reconfig_read_json(session_hanle,
+                                          dev_tgt,
+                                          read_json_entry);
+
+}

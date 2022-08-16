@@ -89,6 +89,10 @@ pi_status_t pi_runtime_reconfig_change_init(pi_session_handle_t session_handle,
                                             const char* pipeline_name,
                                             const char* table_name_next);
 
+pi_status_t pi_runtime_reconfig_read_json(pi_session_handle_t session_hanle,
+                                          pi_dev_tgt_t dev_tgt,
+                                          char* p4objects_json);
+
 
 #ifdef __cplusplus
 }

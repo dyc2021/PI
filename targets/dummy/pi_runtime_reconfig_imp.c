@@ -198,3 +198,13 @@ pi_status_t _pi_runtime_reconfig_change_init(pi_session_handle_t session_handle,
     func_counter_increment(__func__);
     return PI_STATUS_SUCCESS;
 }
+
+pi_status_t _pi_runtime_reconfig_read_json(pi_session_handle_t session_handle,
+                                           pi_dev_tgt_t dev_tgt,
+                                           char* p4objects_json) {
+    (void)session_handle;
+    (void)dev_tgt;
+    (void)p4objects_json;
+    func_counter_increment(__func__);
+    return PI_STATUS_SUCCESS;
+}
