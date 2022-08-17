@@ -1805,6 +1805,7 @@ class DeviceMgrImp {
                 auto pi_status = pi_runtime_reconfig_trigger(
                                             session.get(), device_tgt,
                                             trigger_entry.on_or_off(),
+                                            trigger_entry.trigger_number(),
                                             p4objects_json_buffer);
                 if (pi_status != PI_STATUS_SUCCESS)
                   RETURN_ERROR_STATUS(Code::UNKNOWN, "Runtime_Reconfig_Error: when triggering");

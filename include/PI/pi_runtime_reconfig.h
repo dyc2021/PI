@@ -96,6 +96,7 @@ pi_status_t pi_runtime_reconfig_delete_register_array(pi_session_handle_t sessio
 pi_status_t pi_runtime_reconfig_trigger(pi_session_handle_t session_handle,
                                         pi_dev_tgt_t dev_tgt,
                                         bool on_or_off,
+                                        int trigger_number,
                                         char* p4objects_json_buffer);
 
 pi_status_t pi_runtime_reconfig_change_init(pi_session_handle_t session_handle,

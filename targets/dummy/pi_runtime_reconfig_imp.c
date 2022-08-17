@@ -206,10 +206,12 @@ pi_status_t _pi_runtime_reconfig_delete_register_array(pi_session_handle_t sessi
 pi_status_t _pi_runtime_reconfig_trigger(pi_session_handle_t session_handle,
                                         pi_dev_tgt_t dev_tgt,
                                         bool on_or_off,
+                                        int trigger_number,
                                         char* p4objects_json_buffer) {
     (void)session_handle;
     (void)dev_tgt;
     (void)on_or_off;
+    (void)trigger_number;
     (void)p4objects_json_buffer;
     func_counter_increment(__func__);
     return PI_STATUS_SUCCESS;

@@ -203,12 +203,14 @@ pi_status_t pi_runtime_reconfig_delete_register_array(pi_session_handle_t sessio
 pi_status_t pi_runtime_reconfig_trigger(pi_session_handle_t session_handle,
                                         pi_dev_tgt_t dev_tgt,
                                         bool on_or_off,
+                                        int trigger_number,
                                         char* p4objects_json_buffer) {
     const pi_p4info_t* p4info = pi_get_device_p4info(dev_tgt.dev_id);
     if (!p4info) return PI_STATUS_DEV_NOT_ASSIGNED;
     return _pi_runtime_reconfig_trigger(session_handle,
                                         dev_tgt,
                                         on_or_off,
+                                        trigger_number,
                                         p4objects_json_buffer);
 }
 
