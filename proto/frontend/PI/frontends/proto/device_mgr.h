@@ -72,7 +72,7 @@ class DeviceMgr {
       p4::v1::GetForwardingPipelineConfigRequest::ResponseType response_type,
       p4::v1::ForwardingPipelineConfig *config);
 
-  Status write(const p4::v1::WriteRequest &request);
+  Status write(const p4::v1::WriteRequest &request, p4::v1::WriteResponse* rep);
 
   Status read(const p4::v1::ReadRequest &request,
               p4::v1::ReadResponse *response) const;

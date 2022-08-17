@@ -422,7 +422,7 @@ class P4RuntimeServiceImpl : public p4v1::P4Runtime::Service {
       return not_primary_status();
     auto device_mgr = device->get_p4_mgr();
     if (device_mgr == nullptr) return no_pipeline_config_status();
-    auto status = device_mgr->write(*request);
+    auto status = device_mgr->write(*request, rep);
     return to_grpc_status(status);
   }
 

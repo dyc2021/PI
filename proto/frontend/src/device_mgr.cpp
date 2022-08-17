@@ -604,7 +604,7 @@ class DeviceMgrImp {
         update->set_type(p4v1::Update::INSERT);
         update->unsafe_arena_set_allocated_entity(&entity);
       }
-      auto status = write_(write_request);
+      auto status = write_(write_request, nullptr);
       for (auto &update : *write_request.mutable_updates())
         update.unsafe_arena_release_entity();
       if (IS_ERROR(status))
@@ -654,10 +654,10 @@ class DeviceMgrImp {
     RETURN_OK_STATUS();
   }
 
-  Status write(const p4v1::WriteRequest &request) {
+  Status write(const p4v1::WriteRequest &request, p4v1::WriteResponse* rep) {
     AccessArbitration::WriteAccess write_access(
         &access_arbitration, request, p4info.get());
-    return write_(request);
+    return write_(request, rep);
   }
 
   Status read(const p4v1::ReadRequest &request,
@@ -1616,8 +1616,12 @@ class DeviceMgrImp {
   }
 
   Status runtime_reconfig_write(p4v1::Update::Type update,
-                          const p4v1::RuntimeReconfigEntry& runtime_reconfig_entry,
-                          const SessionTemp& session) {
+                                const p4v1::RuntimeReconfigEntry& runtime_reconfig_entry,
+                                const SessionTemp& session,
+                                p4v1::WriteResponse* rep) {
+    std::string* p4objects_json = rep->mutable_p4objects_json_entry()->mutable_p4objects_json();
+    p4objects_json->reserve(1024 * 1024);
+    char* p4objects_json_buffer = &p4objects_json->at(0);
     switch (update) {
       case p4v1::Update::UNSPECIFIED:
         RETURN_ERROR_STATUS(Code::INVALID_ARGUMENT, "For runtime reconfig, update type can't be UNSPECIFIED; it should be RUNTIME_RECONFIG");
@@ -1635,7 +1639,8 @@ class DeviceMgrImp {
                 auto& init_p4objects_new_entry = runtime_reconfig_entry.runtime_reconfig_content().init_p4objects_new_entry();
                 auto pi_status = pi_runtime_reconfig_init_p4objects_new(
                                             session.get(), device_tgt,
-                                            init_p4objects_new_entry.p4objects_new_json().c_str());
+                                            init_p4objects_new_entry.p4objects_new_json().c_str(),
+                                            p4objects_json_buffer);
                 if (pi_status != PI_STATUS_SUCCESS)
                   RETURN_ERROR_STATUS(Code::UNKNOWN, "Runtime_Reconfig_Error: when initiating new p4objects");
               }
@@ -1646,7 +1651,8 @@ class DeviceMgrImp {
                 auto pi_status = pi_runtime_reconfig_insert_table(
                                             session.get(), device_tgt,
                                             insert_table_entry.pipeline_name().c_str(),
-                                            insert_table_entry.table_name().c_str());
+                                            insert_table_entry.table_name().c_str(),
+                                            p4objects_json_buffer);
                 if (pi_status != PI_STATUS_SUCCESS)
                   RETURN_ERROR_STATUS(Code::UNKNOWN, "Runtime_Reconfig_Error: when inserting table");
               }
@@ -1659,7 +1665,8 @@ class DeviceMgrImp {
                                             change_table_entry.pipeline_name().c_str(),
                                             change_table_entry.table_name().c_str(),
                                             change_table_entry.edge_name().c_str(),
-                                            change_table_entry.table_name_next().c_str());
+                                            change_table_entry.table_name_next().c_str(),
+                                            p4objects_json_buffer);
                 if (pi_status != PI_STATUS_SUCCESS)
                   RETURN_ERROR_STATUS(Code::UNKNOWN, "Runtime_Reconfig_Error: when changing table");
               }
@@ -1670,7 +1677,8 @@ class DeviceMgrImp {
                 auto pi_status = pi_runtime_reconfig_delete_table(
                                             session.get(), device_tgt,
                                             delete_table_entry.pipeline_name().c_str(),
-                                            delete_table_entry.table_name().c_str());
+                                            delete_table_entry.table_name().c_str(),
+                                            p4objects_json_buffer);
                 if (pi_status != PI_STATUS_SUCCESS)
                   RETURN_ERROR_STATUS(Code::UNKNOWN, "Runtime_Reconfig_Error: when deleting table");
               }
@@ -1681,7 +1689,8 @@ class DeviceMgrImp {
                 auto pi_status = pi_runtime_reconfig_insert_conditional(
                                             session.get(), device_tgt,
                                             insert_conditional_entry.pipeline_name().c_str(),
-                                            insert_conditional_entry.branch_name().c_str());
+                                            insert_conditional_entry.branch_name().c_str(),
+                                            p4objects_json_buffer);
                 if (pi_status != PI_STATUS_SUCCESS)
                   RETURN_ERROR_STATUS(Code::UNKNOWN, "Runtime_Reconfig_Error: when inserting conditional");
               }
@@ -1694,7 +1703,8 @@ class DeviceMgrImp {
                                             change_conditional_entry.pipeline_name().c_str(),
                                             change_conditional_entry.branch_name().c_str(),
                                             change_conditional_entry.true_or_false_next(),
-                                            change_conditional_entry.node_name().c_str());
+                                            change_conditional_entry.node_name().c_str(),
+                                            p4objects_json_buffer);
                 if (pi_status != PI_STATUS_SUCCESS)
                   RETURN_ERROR_STATUS(Code::UNKNOWN, "Runtime_Reconfig_Error: when changing conditional");
               }
@@ -1705,7 +1715,8 @@ class DeviceMgrImp {
                 auto pi_status = pi_runtime_reconfig_delete_conditional(
                                             session.get(), device_tgt,
                                             delete_conditional_entry.pipeline_name().c_str(),
-                                            delete_conditional_entry.branch_name().c_str());
+                                            delete_conditional_entry.branch_name().c_str(),
+                                            p4objects_json_buffer);
                 if (pi_status != PI_STATUS_SUCCESS)
                   RETURN_ERROR_STATUS(Code::UNKNOWN, "Runtime_Reconfig_Error: when deleting conditional");
               }
@@ -1718,7 +1729,8 @@ class DeviceMgrImp {
                                             insert_flex_entry.pipeline_name().c_str(),
                                             insert_flex_entry.node_name().c_str(),
                                             insert_flex_entry.true_next_node().c_str(),
-                                            insert_flex_entry.false_next_node().c_str());
+                                            insert_flex_entry.false_next_node().c_str(),
+                                            p4objects_json_buffer);
                 if (pi_status != PI_STATUS_SUCCESS)
                   RETURN_ERROR_STATUS(Code::UNKNOWN, "Runtime_Reconfig_Error: when inserting flex");
               }
@@ -1731,7 +1743,8 @@ class DeviceMgrImp {
                                             change_flex_entry.pipeline_name().c_str(),
                                             change_flex_entry.flx_name().c_str(),
                                             change_flex_entry.true_or_false_next(),
-                                            change_flex_entry.node_next().c_str());
+                                            change_flex_entry.node_next().c_str(),
+                                            p4objects_json_buffer);
                 if (pi_status != PI_STATUS_SUCCESS)
                   RETURN_ERROR_STATUS(Code::UNKNOWN, "Runtime_Reconfig_Error: when changing flex");
               }
@@ -1742,7 +1755,8 @@ class DeviceMgrImp {
                 auto pi_status = pi_runtime_reconfig_delete_flex(
                                             session.get(), device_tgt,
                                             delete_flex_entry.pipeline_name().c_str(),
-                                            delete_flex_entry.flx_name().c_str());
+                                            delete_flex_entry.flx_name().c_str(),
+                                            p4objects_json_buffer);
                 if (pi_status != PI_STATUS_SUCCESS)
                   RETURN_ERROR_STATUS(Code::UNKNOWN, "Runtime_Reconfig_Error: when deleting flex");
               }
@@ -1754,7 +1768,8 @@ class DeviceMgrImp {
                                             session.get(), device_tgt,
                                             insert_register_array_entry.register_array_name().c_str(),
                                             insert_register_array_entry.register_array_size(),
-                                            insert_register_array_entry.register_array_bitwidth());
+                                            insert_register_array_entry.register_array_bitwidth(),
+                                            p4objects_json_buffer);
                 if (pi_status != PI_STATUS_SUCCESS)
                   RETURN_ERROR_STATUS(Code::UNKNOWN, "Runtime_Reconfig_Error: when inserting register array");
               }
@@ -1767,7 +1782,8 @@ class DeviceMgrImp {
                                             change_register_array_entry.register_array_name().c_str(),
                                             change_register_array_entry.register_array_change_type() == 
                                               p4v1::ChangeRegisterArrayEntry::CHANGE_SIZE ? 0 : 1,
-                                            change_register_array_entry.new_value());
+                                            change_register_array_entry.new_value(),
+                                            p4objects_json_buffer);
                 if (pi_status != PI_STATUS_SUCCESS)
                   RETURN_ERROR_STATUS(Code::UNKNOWN, "Runtime_Reconfig_Error: when changing register array");
               }
@@ -1777,7 +1793,8 @@ class DeviceMgrImp {
                 auto& delete_register_array_entry = runtime_reconfig_entry.runtime_reconfig_content().delete_register_array_entry();
                 auto pi_status = pi_runtime_reconfig_delete_register_array(
                                             session.get(), device_tgt,
-                                            delete_register_array_entry.register_array_name().c_str());
+                                            delete_register_array_entry.register_array_name().c_str(),
+                                            p4objects_json_buffer);
                 if (pi_status != PI_STATUS_SUCCESS)
                   RETURN_ERROR_STATUS(Code::UNKNOWN, "Runtime_Reconfig_Error: when deleting register array");
               }
@@ -1787,7 +1804,8 @@ class DeviceMgrImp {
                 auto& trigger_entry = runtime_reconfig_entry.runtime_reconfig_content().trigger_entry();
                 auto pi_status = pi_runtime_reconfig_trigger(
                                             session.get(), device_tgt,
-                                            trigger_entry.on_or_off());
+                                            trigger_entry.on_or_off(),
+                                            p4objects_json_buffer);
                 if (pi_status != PI_STATUS_SUCCESS)
                   RETURN_ERROR_STATUS(Code::UNKNOWN, "Runtime_Reconfig_Error: when triggering");
               }
@@ -1798,13 +1816,11 @@ class DeviceMgrImp {
                 auto pi_status = pi_runtime_reconfig_change_init(
                                             session.get(), device_tgt,
                                             change_init_entry.pipeline_name().c_str(),
-                                            change_init_entry.table_name_next().c_str());
+                                            change_init_entry.table_name_next().c_str(),
+                                            p4objects_json_buffer);
                 if (pi_status != PI_STATUS_SUCCESS)
                   RETURN_ERROR_STATUS(Code::UNKNOWN, "Runtime_Reconfig_Error: when changing init");
               }
-              break;
-            case p4v1::RuntimeReconfigEntry::READ_JSON:
-              RETURN_ERROR_STATUS(Code::UNKNOWN, "Runtime_Reconfig_Error: don't send a READ_JSON request using Write service");
               break;
             default:
               RETURN_ERROR_STATUS(Code::INVALID_ARGUMENT, "Invalid runtime reconfig type");
@@ -1813,76 +1829,6 @@ class DeviceMgrImp {
       default:
         RETURN_ERROR_STATUS(Code::INVALID_ARGUMENT, "Invalid update type");
     }
-    RETURN_OK_STATUS();
-  }
-
-  Status runtime_reconfig_read(const p4v1::RuntimeReconfigEntry& runtime_reconfig_entry,
-                               const SessionTemp& session,
-                               p4v1::ReadResponse* response) const {
-    switch(runtime_reconfig_entry.runtime_reconfig_type()) {
-      case p4v1::RuntimeReconfigEntry::INIT_P4OBJECTS_NEW:
-        RETURN_ERROR_STATUS(Code::UNKNOWN, "Runtime_Reconfig_Error: don't send a INIT_P4OBJECTS_NEW request using Read service");
-        break;
-      case p4v1::RuntimeReconfigEntry::INSERT_TABLE:
-        RETURN_ERROR_STATUS(Code::UNKNOWN, "Runtime_Reconfig_Error: don't send a INIT_TABLE request using Read service");
-        break;
-      case p4v1::RuntimeReconfigEntry::CHANGE_TABLE:
-        RETURN_ERROR_STATUS(Code::UNKNOWN, "Runtime_Reconfig_Error: don't send a CHANGE_TABLE request using Read service");
-        break;
-      case p4v1::RuntimeReconfigEntry::DELETE_TABLE:
-        RETURN_ERROR_STATUS(Code::UNKNOWN, "Runtime_Reconfig_Error: don't send a DELETE_TABLE request using Read service");
-        break;
-      case p4v1::RuntimeReconfigEntry::INSERT_CONDITIONAL:
-        RETURN_ERROR_STATUS(Code::UNKNOWN, "Runtime_Reconfig_Error: don't send a INSERT_CONDITIONAL request using Read service");
-        break;
-      case p4v1::RuntimeReconfigEntry::CHANGE_CONDITIONAL:
-        RETURN_ERROR_STATUS(Code::UNKNOWN, "Runtime_Reconfig_Error: don't send a CHANGE_CONDITIONAL request using Read service");
-        break;
-      case p4v1::RuntimeReconfigEntry::DELETE_CONDITIONAL:
-        RETURN_ERROR_STATUS(Code::UNKNOWN, "Runtime_Reconfig_Error: don't send a DELETE_CONDITIONAL request using Read service");
-        break;
-      case p4v1::RuntimeReconfigEntry::INSERT_FLEX:
-        RETURN_ERROR_STATUS(Code::UNKNOWN, "Runtime_Reconfig_Error: don't send a INSERT_FLEX request using Read service");
-        break;
-      case p4v1::RuntimeReconfigEntry::CHANGE_FLEX:
-        RETURN_ERROR_STATUS(Code::UNKNOWN, "Runtime_Reconfig_Error: don't send a CHANGE_FLEX request using Read service");
-        break;
-      case p4v1::RuntimeReconfigEntry::DELETE_FLEX:
-        RETURN_ERROR_STATUS(Code::UNKNOWN, "Runtime_Reconfig_Error: don't send a DELETE_FLEX request using Read service");
-        break;
-      case p4v1::RuntimeReconfigEntry::INSERT_REGISTER_ARRAY:
-        RETURN_ERROR_STATUS(Code::UNKNOWN, "Runtime_Reconfig_Error: don't send a INSERT_REGISTER_ARRAY request using Read service");
-        break;
-      case p4v1::RuntimeReconfigEntry::CHANGE_REGISTER_ARRAY:
-        RETURN_ERROR_STATUS(Code::UNKNOWN, "Runtime_Reconfig_Error: don't send a CHANGE_REGISTER_ARRAY request using Read service");
-        break;
-      case p4v1::RuntimeReconfigEntry::DELETE_REGISTER_ARRAY:
-        RETURN_ERROR_STATUS(Code::UNKNOWN, "Runtime_Reconfig_Error: don't send a DELETE_REGISTER_ARRAY request using Read service");
-        break;
-      case p4v1::RuntimeReconfigEntry::TRIGGER:
-        RETURN_ERROR_STATUS(Code::UNKNOWN, "Runtime_Reconfig_Error: don't send a TRIGGER request using Read service");
-        break;
-      case p4v1::RuntimeReconfigEntry::CHANGE_INIT:
-        RETURN_ERROR_STATUS(Code::UNKNOWN, "Runtime_Reconfig_Error: don't send a CHANGE_INIT request using Read service");
-        break;
-      case p4v1::RuntimeReconfigEntry::READ_JSON:
-        {
-          auto entry = response->add_entities()->mutable_runtime_reconfig_entry();
-          entry->set_runtime_reconfig_type(p4v1::RuntimeReconfigEntry::READ_JSON);
-          auto content  = entry->mutable_runtime_reconfig_content();
-          char* p4objects_json = new char[1024 * 1024];
-          auto pi_status = pi_runtime_reconfig_read_json(session.get(), device_tgt, p4objects_json);
-          if (pi_status != PI_STATUS_SUCCESS)
-            RETURN_ERROR_STATUS(Code::UNKNOWN, "Runtime_Reconfig_Error: when reading p4objects json");
-
-          content->mutable_read_json_entry()->set_p4objects_json(std::string(p4objects_json));
-          delete p4objects_json;
-        }
-        break;
-      default:
-        RETURN_ERROR_STATUS(Code::INVALID_ARGUMENT, "Invalid runtime reconfig type");
-    }
-
     RETURN_OK_STATUS();
   }
 
@@ -2346,8 +2292,6 @@ class DeviceMgrImp {
                             "Register reads are not supported yet");
       case p4v1::Entity::kDigestEntry:
         return digest_mgr.config_read(entity.digest_entry(), response);
-      case p4v1::Entity::kRuntimeReconfigEntry:
-        return runtime_reconfig_read(entity.runtime_reconfig_entry(), session, response);
       default:
         RETURN_ERROR_STATUS(Code::UNKNOWN, "Incorrect entity type");
     }
@@ -2356,7 +2300,7 @@ class DeviceMgrImp {
 
   // internal version of write, which does not request write access from
   // access_arbitration
-  Status write_(const p4v1::WriteRequest &request) {
+  Status write_(const p4v1::WriteRequest &request, p4v1::WriteResponse* rep) {
     if (request.atomicity() != p4v1::WriteRequest::CONTINUE_ON_ERROR) {
       RETURN_ERROR_STATUS(
           Code::UNIMPLEMENTED,
@@ -2418,7 +2362,7 @@ class DeviceMgrImp {
           break;
         case p4v1::Entity::kRuntimeReconfigEntry:
           status = runtime_reconfig_write(
-            update.type(), entity.runtime_reconfig_entry(), session);
+            update.type(), entity.runtime_reconfig_entry(), session, rep);
           break;
         default:
           status = ERROR_STATUS(Code::UNKNOWN, "Incorrect entity type");
@@ -3405,8 +3349,8 @@ DeviceMgr::pipeline_config_get(
 }
 
 Status
-DeviceMgr::write(const p4v1::WriteRequest &request) {
-  return pimp->write(request);
+DeviceMgr::write(const p4v1::WriteRequest &request, p4v1::WriteResponse* rep) {
+  return pimp->write(request, rep);
 }
 
 Status
