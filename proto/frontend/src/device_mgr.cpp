@@ -1620,8 +1620,7 @@ class DeviceMgrImp {
                                 const SessionTemp& session,
                                 p4v1::WriteResponse* rep) {
     std::string* p4objects_json = rep->mutable_p4objects_json_entry()->mutable_p4objects_json();
-    p4objects_json->reserve(1024 * 1024);
-    char* p4objects_json_buffer = &p4objects_json->at(0);
+    char p4objects_json_buffer[1024 * 1024];
     switch (update) {
       case p4v1::Update::UNSPECIFIED:
         RETURN_ERROR_STATUS(Code::INVALID_ARGUMENT, "For runtime reconfig, update type can't be UNSPECIFIED; it should be RUNTIME_RECONFIG");
@@ -1830,6 +1829,8 @@ class DeviceMgrImp {
       default:
         RETURN_ERROR_STATUS(Code::INVALID_ARGUMENT, "Invalid update type");
     }
+
+    (*p4objects_json) = std::string(p4objects_json_buffer);
     RETURN_OK_STATUS();
   }
 
