@@ -409,7 +409,6 @@ class P4RuntimeServiceImpl : public p4v1::P4Runtime::Service {
                p4v1::WriteResponse *rep) override {
     SIMPLELOG << "P4Runtime Write\n";
     SIMPLELOG << request->DebugString();
-    (void) rep;
     auto device = Devices::get(request->device_id());
     // TODO(antonin): if there are no connections, we accept all Write requests
     // with no election_id. This is very convenient for debugging, testing and
