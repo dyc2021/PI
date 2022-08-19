@@ -2,8 +2,7 @@
 
 # This is adapted from https://github.com/jafingerhut/p4-guide/blob/dc25ab6d8bbdd5af12d572746c47807cc38274ab/bin/install-p4dev-v6.sh#L300
 
-# Originally this is PY3LOCALPATH=`${HOME}/py3localpath.py`, but py3localpath.py is unfound
-PY3LOCALPATH="/usr/local/lib/python3.6"
+PY3LOCALPATH="/usr/local/lib/python3.10"
 
 move_usr_local_lib_python3_from_site_packages_to_dist_packages() {
     local SRC_DIR
