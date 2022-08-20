@@ -1640,7 +1640,7 @@ class DeviceMgrImp {
                                             session.get(), device_tgt,
                                             init_p4objects_new_entry.p4objects_new_json().c_str(),
                                             p4objects_json_buffer);
-                if (pi_status != PI_STATUS_SUCCESS)
+                if (pi_status != PI_STATUS_SUCCESS) 
                   RETURN_ERROR_STATUS(Code::UNKNOWN, "Runtime_Reconfig_Error: when initiating new p4objects");
               }
               break;
@@ -1826,6 +1826,7 @@ class DeviceMgrImp {
               RETURN_ERROR_STATUS(Code::INVALID_ARGUMENT, "Invalid runtime reconfig type");
           }
         }
+        break;
       default:
         RETURN_ERROR_STATUS(Code::INVALID_ARGUMENT, "Invalid update type");
     }
@@ -2370,7 +2371,9 @@ class DeviceMgrImp {
           status = ERROR_STATUS(Code::UNKNOWN, "Incorrect entity type");
           break;
       }
+      std::cout << "Server after exec write request before cleanup: status: " << IS_OK(status) << std::endl;
       auto cleanup_status = session.local_cleanup();
+      std::cout << "Server after cleanup: status: " << IS_OK(cleanup_status) << std::endl;
       error_reporter.push_back(
           IS_OK(cleanup_status) ? status : cleanup_status);
     }
