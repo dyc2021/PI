@@ -2371,9 +2371,7 @@ class DeviceMgrImp {
           status = ERROR_STATUS(Code::UNKNOWN, "Incorrect entity type");
           break;
       }
-      std::cout << "Server after exec write request before cleanup: status: " << IS_OK(status) << std::endl;
       auto cleanup_status = session.local_cleanup();
-      std::cout << "Server after cleanup: status: " << IS_OK(cleanup_status) << std::endl;
       error_reporter.push_back(
           IS_OK(cleanup_status) ? status : cleanup_status);
     }
